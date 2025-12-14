@@ -52,6 +52,21 @@
 	};
 };
 
+&blsp2_i2c6 {
+	status = "okay";
+
+	fuelgauge@36 {
+		compatible = "maxim,max17050";
+		reg = <0x36>;
+
+		interrupt-parent = <&pm8941_gpios>;
+		interrupts = <26 IRQ_TYPE_EDGE_FALLING>;
+
+		pinctrl-0 = <&fuelgauge_pin>;
+		pinctrl-names = "default";
+	};
+};
+
 &blsp1_uart2 {
 	status = "okay";
 };
@@ -146,6 +161,14 @@
 		pins = "gpio2", "gpio3", "gpio5";
 		function = "normal";
 		bias-pull-up;
+		power-source = <PM8941_GPIO_S3>;
+	};
+
+	fuelgauge_pin: fuelgauge-int-state {
+		pins = "gpio26";
+		function = "normal";
+		bias-disable;
+		input-enable;
 		power-source = <PM8941_GPIO_S3>;
 	};
 };
