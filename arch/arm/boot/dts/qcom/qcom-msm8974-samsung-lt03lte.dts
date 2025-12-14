@@ -64,6 +64,10 @@
 
 		pinctrl-0 = <&fuelgauge_pin>;
 		pinctrl-names = "default";
+
+		maxim,rsns-microohm = <10000>;
+		maxim,over-heat-temp = <600>;
+		maxim,over-volt = <4300>;
 	};
 };
 
