@@ -20,6 +20,15 @@
 
 	chosen {
 		stdout-path = "serial0:115200n8";
+
+		fb0: framebuffer@3200000 {
+			compatible = "simple-framebuffer";
+			reg = <0x3200000 (2560 * 1600 * 4)>;
+			width = <2560>;
+			height = <1600>;
+			stride = <(2560 * 4)>;
+			format = "a8b8g8r8";
+		};
 	};
 
 	gpio-keys {
@@ -76,10 +85,6 @@
 };
 
 &gpu {
-	status = "okay";
-};
-
-&mdss {
 	status = "okay";
 };
 
