@@ -21,6 +21,35 @@
 	chosen {
 		stdout-path = "serial0:115200n8";
 	};
+
+	gpio-keys {
+		compatible = "gpio-keys";
+
+		pinctrl-0 = <&gpio_keys_pin_a>;
+		pinctrl-names = "default";
+
+		key-home {
+			label = "Home Key";
+			gpios = <&pm8941_gpios 3 GPIO_ACTIVE_LOW>;
+			linux,code = <KEY_HOMEPAGE>;
+			wakeup-source;
+			debounce-interval = <15>;
+		};
+
+		key-volume-down {
+			label = "Volume Down";
+			gpios = <&pm8941_gpios 2 GPIO_ACTIVE_LOW>;
+			linux,code = <KEY_VOLUMEDOWN>;
+			debounce-interval = <15>;
+		};
+
+		key-volume-up {
+			label = "Volume Up";
+			gpios = <&pm8941_gpios 5 GPIO_ACTIVE_LOW>;
+			linux,code = <KEY_VOLUMEUP>;
+			debounce-interval = <15>;
+		};
+	};
 };
 
 &blsp1_uart2 {
@@ -47,7 +76,99 @@
 };
 
 &usb_hs1_phy {
+	v1p8-supply = <&pm8941_l6>;
+	v3p3-supply = <&pm8941_l24>;
+
 	qcom,init-seq = /bits/ 8 <0x1 0x64>;
 
 	status = "okay";
+};
+
+&rpm_requests {
+	regulators-0 {
+		compatible = "qcom,rpm-pm8941-regulators";
+
+		pm8941_s3: s3 {
+			regulator-min-microvolt = <1800000>;
+			regulator-max-microvolt = <1800000>;
+		};
+
+		pm8941_l6: l6 {
+			regulator-min-microvolt = <1800000>;
+			regulator-max-microvolt = <1800000>;
+		};
+
+		pm8941_l20: l20 {
+			regulator-min-microvolt = <2950000>;
+			regulator-max-microvolt = <2950000>;
+			regulator-system-load = <200000>;
+			regulator-allow-set-load;
+		};
+
+		pm8941_l21: l21 {
+			regulator-min-microvolt = <2950000>;
+			regulator-max-microvolt = <2950000>;
+			regulator-system-load = <200000>;
+			regulator-allow-set-load;
+		};
+
+		pm8941_l24: l24 {
+			regulator-min-microvolt = <3075000>;
+			regulator-max-microvolt = <3075000>;
+		};
+	};
+};
+
+&sdhc_1 {
+	vmmc-supply = <&pm8941_l20>;
+	vqmmc-supply = <&pm8941_s3>;
+
+	pinctrl-0 = <&sdhc1_pin_a>;
+	pinctrl-names = "default";
+
+	status = "okay";
+};
+
+&sdhc_3 {
+	max-frequency = <100000000>;
+
+	vmmc-supply = <&pm8941_l21>;
+	vqmmc-supply = <&pm8941_l21>;
+
+	pinctrl-0 = <&sdhc3_pin_a>;
+	pinctrl-names = "default";
+
+	status = "okay";
+};
+
+&pm8941_gpios {
+	gpio_keys_pin_a: gpio-keys-active-state {
+		pins = "gpio2", "gpio3", "gpio5";
+		function = "normal";
+		bias-pull-up;
+		power-source = <PM8941_GPIO_S3>;
+	};
+};
+
+&tlmm {
+	sdhc1_pin_a: sdhc1-pin-active-state {
+		clk-pins {
+			pins = "sdc1_clk";
+			drive-strength = <4>;
+			bias-disable;
+		};
+
+		cmd-data-pins {
+			pins = "sdc1_cmd", "sdc1_data";
+			drive-strength = <4>;
+			bias-pull-up;
+		};
+	};
+
+	sdhc3_pin_a: sdhc3-pin-active-state {
+		pins = "gpio35", "gpio36", "gpio37", "gpio38", "gpio39", "gpio40";
+		function = "sdc3";
+		drive-strength = <8>;
+		bias-disable;
+	};
 };
