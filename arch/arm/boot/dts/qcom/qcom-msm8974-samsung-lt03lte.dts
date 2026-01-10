@@ -55,7 +55,6 @@
 		compatible = "samsung,lsl101dl01";
 
 		power-supply = <&vreg_panel>;
-		enable-gpios = <&pm8941_gpios 14 GPIO_ACTIVE_HIGH>;
 		hpd-gpios = <&tlmm 102 GPIO_ACTIVE_HIGH>;
 		te-gpios = <&tlmm 12 GPIO_ACTIVE_HIGH>;
 
