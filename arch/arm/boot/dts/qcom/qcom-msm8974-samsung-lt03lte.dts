@@ -54,6 +54,7 @@
 	panel: panel {
 		compatible = "samsung,lsl101dl01";
 
+		backlight = <&backlight>;
 		power-supply = <&vreg_panel>;
 		hpd-gpios = <&tlmm 102 GPIO_ACTIVE_HIGH>;
 		te-gpios = <&tlmm 12 GPIO_ACTIVE_HIGH>;
@@ -76,6 +77,84 @@
 
 		pinctrl-names = "default";
 		pinctrl-0 = <&panel_en_pin>;
+	};
+
+	backlight_reset_supply: backlight-reset-supply {
+		compatible = "regulator-fixed";
+		regulator-name = "backlight-reset-vreg";
+		pinctrl-names = "default";
+		pinctrl-0 = <&backlight_reset>;
+		gpio = <&tlmm 69 GPIO_ACTIVE_HIGH>;
+		enable-active-high;
+		vin-supply = <&vreg_panel>;	/* Pulls i2c pins down if not enabled */
+		startup-delay-us = <10000>;
+	};
+};
+
+&pm8941_lpg {
+	status = "okay";
+};
+
+&soc {
+	i2c@24 {
+		compatible = "i2c-gpio";
+		sda-gpios = <&tlmm 95 (GPIO_ACTIVE_HIGH|GPIO_OPEN_DRAIN)>;
+		scl-gpios = <&tlmm 96 (GPIO_ACTIVE_HIGH|GPIO_OPEN_DRAIN)>;
+		i2c-gpio,delay-us = <2>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		backlight: backlight@2c {
+			compatible = "ti,lp8556";
+			reg = <0x2c>;
+
+			bl-name = "lcd-bl";
+			dev-ctrl = /bits/ 8 <0x01>;
+			init-brt = /bits/ 8 <0x72>;	/* 114 */
+
+			pwms = <&pm8941_lpg 0 100000>;
+			pwm-names = "lp8556";
+			pinctrl-names = "default";
+			pinctrl-0 = <&backlight_pwm_pin>;
+
+			enable-supply = <&backlight_reset_supply>;
+
+			/* higher inductor current limit */
+			rom-98h {
+				rom-addr = /bits/ 8 <0x98>;
+				rom-val = /bits/ 8 <0xa1>;
+			};
+
+			/* automatic standby via pwm disabled, 25 mA max LED current */
+			rom-a1h {
+				rom-addr = /bits/ 8 <0xa1>;
+				rom-val = /bits/ 8 <0x5f>;
+			};
+
+			/* 200 ms slope, heavy smoothing, 1-bit PWM input hysteresis */
+			rom-a3h {
+				rom-addr = /bits/ 8 <0xa3>;
+				rom-val = /bits/ 8 <0x5e>;
+			};
+
+			/* disable PWM passthrough, 6 PWM output phases, 9616 Hz PWM frequency */
+			rom-a5h {
+				rom-addr = /bits/ 8 <0xa5>;
+				rom-val = /bits/ 8 <0x04>;
+			};
+
+			/* all reserved */
+			rom-a8h {
+				rom-addr = /bits/ 8 <0xa8>;
+				rom-val = /bits/ 8 <0x00>;
+			};
+
+			/* 24 V max output voltage, jump detection on pwm input disabled */
+			rom-a9h {
+				rom-addr = /bits/ 8 <0xa9>;
+				rom-val = /bits/ 8 <0xa0>;
+			};
+		};
 	};
 };
 
@@ -219,6 +298,13 @@
 		power-source = <PM8941_GPIO_S3>;
 		qcom,drive-strength = <PMIC_GPIO_STRENGTH_LOW>;
 	};
+
+	backlight_pwm_pin: bl-pwm {
+		pins = "gpio36";
+		function = "normal";
+		bias-pull-up;
+		power-source = <PM8941_GPIO_S3>;
+	};
 };
 
 &tlmm {
@@ -240,6 +326,12 @@
 		pins = "gpio35", "gpio36", "gpio37", "gpio38", "gpio39", "gpio40";
 		function = "sdc3";
 		drive-strength = <8>;
+		bias-disable;
+	};
+
+	backlight_reset: backlight-reset-pins {
+		pins = "gpio69";
+		function = "gpio";
 		bias-disable;
 	};
 };
