@@ -50,6 +50,16 @@
 			debounce-interval = <15>;
 		};
 	};
+
+	panel: panel {
+		compatible = "samsung,lsl101dl01";
+
+		port {
+			panel_in: endpoint {
+				remote-endpoint = <&mdp5_intf0_out>;
+			};
+		};
+	};
 };
 
 &blsp2_i2c6 {
@@ -82,6 +92,20 @@
 &mdss {
 	status = "okay";
 };
+
+&mdp {
+	ports {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		port@0 {
+			reg = <0>;
+			mdp5_intf0_out: endpoint {
+				remote-endpoint = <&panel_in>;
+			};
+		};
+	}
+}
 
 &usb {
 	phys = <&usb_hs1_phy>;
@@ -129,6 +153,11 @@
 			regulator-max-microvolt = <2950000>;
 			regulator-system-load = <200000>;
 			regulator-allow-set-load;
+		};
+
+		pm8941_l22: l22 {
+			regulator-min-microvolt = <2500000>;
+			regulator-max-microvolt = <3000000>;
 		};
 
 		pm8941_l24: l24 {
