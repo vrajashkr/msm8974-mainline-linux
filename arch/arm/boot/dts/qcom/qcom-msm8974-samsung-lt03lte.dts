@@ -54,11 +54,29 @@
 	panel: panel {
 		compatible = "samsung,lsl101dl01";
 
+		power-supply = <&vreg_panel>;
+		enable-gpios = <&pm8941_gpios 14 GPIO_ACTIVE_HIGH>;
+		hpd-gpios = <&tlmm 102 GPIO_ACTIVE_HIGH>;
+		te-gpios = <&tlmm 12 GPIO_ACTIVE_HIGH>;
+
 		port {
 			panel_in: endpoint {
 				remote-endpoint = <&mdp5_intf0_out>;
 			};
 		};
+	};
+
+	vreg_panel: regulator-panel {
+		compatible = "regulator-fixed";
+		regulator-name = "panel-vddr-reg";
+		regulator-min-microvolt = <1500000>;
+		regulator-max-microvolt = <1500000>;
+
+		gpio = <&pm8941_gpios 14 GPIO_ACTIVE_HIGH>;
+		enable-active-high;
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&panel_en_pin>;
 	};
 };
 
@@ -93,19 +111,9 @@
 	status = "okay";
 };
 
-&mdp {
-	ports {
-		#address-cells = <1>;
-		#size-cells = <0>;
-
-		port@0 {
-			reg = <0>;
-			mdp5_intf0_out: endpoint {
-				remote-endpoint = <&panel_in>;
-			};
-		};
-	}
-}
+&mdp5_intf0_out {
+	remote-endpoint = <&panel_in>;
+};
 
 &usb {
 	phys = <&usb_hs1_phy>;
@@ -203,6 +211,14 @@
 		bias-disable;
 		input-enable;
 		power-source = <PM8941_GPIO_S3>;
+	};
+
+	panel_en_pin: panel-en-state {
+		pins = "gpio14";
+		function = "normal";
+		bias-pull-up;
+		power-source = <PM8941_GPIO_S3>;
+		qcom,drive-strength = <PMIC_GPIO_STRENGTH_LOW>;
 	};
 };
 
