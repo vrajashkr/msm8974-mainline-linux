@@ -93,6 +93,8 @@
 
 &pm8941_lpg {
 	status = "okay";
+
+	qcom,power-source = <1>;
 };
 
 &soc {
@@ -112,7 +114,7 @@
 			dev-ctrl = /bits/ 8 <0x01>;
 			init-brt = /bits/ 8 <0x72>;	/* 114 */
 
-			pwms = <&pm8941_lpg 0 100000>;
+			pwms = <&pm8941_lpg 7 100000>;
 			pwm-names = "lp8556";
 			pinctrl-names = "default";
 			pinctrl-0 = <&backlight_pwm_pin>;
